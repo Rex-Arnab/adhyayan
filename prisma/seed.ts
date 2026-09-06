@@ -167,6 +167,18 @@ async function seedDemoStudent(
 }
 
 async function main() {
+  // The seed is DESTRUCTIVE — reset() deletes every user. `docker compose up`
+  // re-runs the migrate service on each start, so without this guard a restart
+  // would silently wipe real accounts. Re-seed deliberately with FORCE_SEED=1.
+  const existingCourses = await db.course.count();
+  if (existingCourses > 0 && process.env.FORCE_SEED !== "1") {
+    console.log(
+      `Database already has ${existingCourses} courses — skipping seed. ` +
+        "Set FORCE_SEED=1 to wipe and re-seed.",
+    );
+    return;
+  }
+
   console.log("Resetting…");
   await reset();
 

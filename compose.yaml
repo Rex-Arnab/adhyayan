@@ -1,0 +1,67 @@
+# Pinned tags only — a floating tag makes the stack unreproducible.
+services:
+  db:
+    image: postgres:17.6-alpine
+    environment:
+      POSTGRES_USER: adhyayan
+      POSTGRES_PASSWORD: adhyayan
+      POSTGRES_DB: adhyayan
+    ports:
+      - "5433:5432"   # 5433 on the host: 5432 is the developer's own Postgres
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U adhyayan -d adhyayan"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  # Migrate and seed once, then exit. Split from `web` so the app container has
+  # no reason to hold migration privileges or run on every restart.
+  migrate:
+    build:
+      context: .
+      target: migrator
+    environment:
+      DATABASE_URL: postgresql://adhyayan:adhyayan@db:5432/adhyayan
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  web:
+    build:
+      context: .
+    environment:
+      DATABASE_URL: postgresql://adhyayan:adhyayan@db:5432/adhyayan
+      AUTH_SECRET: "${AUTH_SECRET:?set AUTH_SECRET in .env - generate one with `npx auth secret`}"
+      AUTH_URL: http://localhost:3000
+      APP_ORIGIN: http://localhost:3000
+    ports:
+      - "3000:3000"
+    volumes:
+      # /admin/insights reads metrics.json, which the `ml` job writes. Without a
+      # shared volume the page would always report that the pipeline never ran.
+      - ml-artifacts:/app/ml/artifacts:ro
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  # Batch scorer. Not started by default — run it on demand:
+  #   docker compose run --rm ml
+  ml:
+    build:
+      context: ./ml
+    environment:
+      DATABASE_URL: postgresql://adhyayan:adhyayan@db:5432/adhyayan
+    volumes:
+      - ml-artifacts:/app/artifacts
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    profiles: ["ml"]
+
+volumes:
+  db-data:
+  ml-artifacts:

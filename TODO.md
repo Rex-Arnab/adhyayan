@@ -12,7 +12,7 @@ Review STOP points: **M1**, **M4**, **M7**.
 - [x] **M4** `useReadingTracker`, heartbeat/exit routes, sessions, event taxonomy — **STOP**
 - [x] **M5** Completion detection, certificate issue, PDF route, `/certificates/[serial]`
 - [x] **M6** Dashboard: stats, progress bars, session history, certificates *(brought forward)*
-- [ ] **M7** Empty states, skeletons, dark mode, 375px, README, Docker Compose — **STOP**
+- [x] **M7** Empty states, skeletons, dark mode, 375px, README, Docker Compose — **STOP**
 
 ## Phase 2 — the ML engine
 
@@ -26,12 +26,14 @@ Name: **Adhyayan** (अध्ययन — Sanskrit, *dedicated study*). Tagline
 Alternates: "Attention, well spent." · "Learn one thing, all the way through." (current hero headline)
 · "Study that learns how you study." · "The discipline of going deeper."
 
-## Open verification debt
+## Verification debt — CLEARED
 
-- **Idle-gate test is INCONCLUSIVE, not passing.** 90s counted over 200s of zero input, but
-  `TAB_HIDDEN` fired and `IDLE_START` never did — the tab was backgrounded, so timer throttling
-  stopped the count rather than the 60s idle gate. The visibility gate is proven; the idle path
-  is unverified. Needs a run where the window stays genuinely foreground.
+- **Idle gate: PASS.** Re-run against the Docker stack with the tab genuinely visible + focused
+  (verified at both ends, `TAB_HIDDEN` never fired): **44s counted over a 200s idle window**, with
+  `IDLE_START` fired exactly once. Beats are 15s and the idle threshold is 60s, so exactly three
+  beats land before the gate closes — ~45s is the correct expectation, not the ~60s originally
+  written into the band. Paired with 195s counted over a 180s *active* read, the anti-inflation
+  behaviour is proven in both directions.
 
 ## Data caveats on /admin/insights
 
