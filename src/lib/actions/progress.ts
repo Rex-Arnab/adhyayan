@@ -3,13 +3,20 @@
 import { revalidatePath } from "next/cache";
 
 import { requireUser } from "@/lib/auth-helpers";
+import { issueCertificate } from "@/lib/certificate";
 import { db } from "@/lib/db";
 import { logEvent } from "@/lib/events";
 import { recomputeEnrollmentProgress } from "@/lib/progress";
 import { getOrCreateSession } from "@/lib/session-manager";
 
 export type CompleteResult =
-  | { ok: true; progressPct: number; courseCompleted: boolean; nextSlug: string | null }
+  | {
+      ok: true;
+      progressPct: number;
+      courseCompleted: boolean;
+      nextSlug: string | null;
+      certificateSerial: string | null;
+    }
   | { ok: false; error: string };
 
 /**
@@ -58,7 +65,15 @@ export async function markChapterCompleteAction(
       data: { status: "COMPLETED", completedAt: new Date() },
     });
 
-    return recomputeEnrollmentProgress(tx as never, enrollment.id);
+    const progress = await recomputeEnrollmentProgress(tx as never, enrollment.id);
+
+    // Same transaction as the status flip: a course can never be COMPLETED
+    // without its certificate, and a double-click cannot mint a second one.
+    const certificate = progress.justCompleted
+      ? await issueCertificate(tx as never, enrollment.id)
+      : null;
+
+    return { ...progress, certificate };
   });
 
   const learningSessionId = await getOrCreateSession(user.id);
@@ -85,10 +100,21 @@ export async function markChapterCompleteAction(
   revalidatePath(`/courses/${chapter.course.slug}`);
   revalidatePath("/dashboard");
 
+  if (result.certificate && !result.certificate.alreadyExisted) {
+    await logEvent({
+      userId: user.id,
+      sessionId: learningSessionId,
+      type: "CERTIFICATE_ISSUE",
+      courseId: chapter.courseId,
+      metadata: { serial: result.certificate.serial },
+    });
+  }
+
   return {
     ok: true,
     progressPct: result.progressPct,
     courseCompleted: result.justCompleted,
     nextSlug: next?.slug ?? null,
+    certificateSerial: result.certificate?.serial ?? null,
   };
 }

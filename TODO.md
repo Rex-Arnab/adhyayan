@@ -10,7 +10,7 @@ Review STOP points: **M1**, **M4**, **M7**.
 - [x] **M2** 45 markdown chapters across 6 courses, seed (+60 persona-driven learners), `/courses`, `/courses/[slug]`, enrol
 - [x] **M3** Learn page: markdown at 68ch, sidebar, prev/next, mark-complete, progress
 - [x] **M4** `useReadingTracker`, heartbeat/exit routes, sessions, event taxonomy — **STOP**
-- [ ] **M5** Completion detection, certificate issue, PDF route, `/certificates/[serial]`
+- [x] **M5** Completion detection, certificate issue, PDF route, `/certificates/[serial]`
 - [x] **M6** Dashboard: stats, progress bars, session history, certificates *(brought forward)*
 - [ ] **M7** Empty states, skeletons, dark mode, 375px, README, Docker Compose — **STOP**
 
@@ -18,7 +18,7 @@ Review STOP points: **M1**, **M4**, **M7**.
 
 - [x] **M8** heuristic recommender + cards, TF-IDF content, SVD collaborative
 - [x] **M9** Learned ranker (LR/GBM) + KMeans personas + dropout risk, `score.py`
-- [ ] **M10** `/admin/insights`: funnel, CTR by source/variant, feature importances, metrics
+- [x] **M10** `/admin/insights`: funnel, CTR by source/variant, feature importances, metrics *(Highcharts)*
 
 ## Branding
 
@@ -32,6 +32,16 @@ Alternates: "Attention, well spent." · "Learn one thing, all the way through." 
   `TAB_HIDDEN` fired and `IDLE_START` never did — the tab was backgrounded, so timer throttling
   stopped the count rather than the 60s idle gate. The visibility gate is proven; the idle path
   is unverified. Needs a run where the window stays genuinely foreground.
+
+## Data caveats on /admin/insights
+
+- **CTR is computed on rows actually SHOWN**, not rows written. The batch scorer
+  writes ~180 ML rows but only impressions counted; with a handful of
+  impressions the A/B split is not yet statistically meaningful. It moves as
+  soon as real dashboards are viewed.
+- The funnel looks flattering (79% of registered completed a course) because it
+  is dominated by seeded synthetic learners, who are deliberately more diligent
+  than real ones.
 
 ## Known issues / deferred
 
