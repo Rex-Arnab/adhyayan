@@ -7,7 +7,7 @@ Review STOP points: **M1**, **M4**, **M7**.
 
 - [x] **M0** Scaffold, theme tokens, Prisma 7 wired, schema migrated
 - [x] **M1** Auth: register / login / logout, JWT session, protected routes, `/dashboard` stub — **STOP**
-- [ ] **M2** 29 markdown chapters, seed (+60 persona-driven learners), `/courses`, `/courses/[slug]`, enrol
+- [x] **M2** 29 markdown chapters, seed (+60 persona-driven learners), `/courses`, `/courses/[slug]`, enrol
 - [ ] **M3** Learn page: markdown at 68ch, sidebar, prev/next, mark-complete, progress
 - [ ] **M4** `useReadingTracker`, heartbeat/exit routes, sessions, event taxonomy — **STOP**
 - [ ] **M5** Completion detection, certificate issue, PDF route, `/certificates/[serial]`
@@ -27,6 +27,17 @@ Alternates: "Attention, well spent." · "Learn one thing, all the way through." 
 · "Study that learns how you study." · "The discipline of going deeper."
 
 ## Known issues / deferred
+
+- **Build warning (upstream, benign):** `jose` triggers "A Node.js API is used (CompressionStream)
+  which is not supported in the Edge Runtime" via `next-auth`. It is a static import trace for
+  compressed-JWE deflate; Auth.js never sets the `zip` header, so the path is unreachable at
+  runtime. No clean fix without patching `node_modules`. Middleware works.
+- **Stale JWT on reads:** mutations go through `requireUser()` (verifies the row exists), but read
+  paths still log events optimistically. After re-seeding, a stale token shows a signed-in header
+  while events fail-soft until re-login. Acceptable; documented rather than fixed.
+- Seed emits 11 event types. The remaining taxonomy (`CHAPTER_EXIT`, `IDLE_*`, `TAB_*`,
+  `CERTIFICATE_DOWNLOAD`, `RECOMMENDATION_*`) is live-interaction only and arrives with M4/M10 —
+  deliberately not fabricated in the seed.
 
 - `npm audit`: 2 high advisories (`mysql2`, `deepmerge-ts`) are **dev-only transitive deps of the
   Prisma CLI**. `mysql2` is a driver we never load. Not in the runtime bundle. `npm audit fix --force`
