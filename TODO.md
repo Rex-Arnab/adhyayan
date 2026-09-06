@@ -6,7 +6,7 @@ Review STOP points: **M1**, **M4**, **M7**.
 ## Phase 1 — the journey
 
 - [x] **M0** Scaffold, theme tokens, Prisma 7 wired, schema migrated
-- [ ] **M1** Auth: register / login / logout, JWT session, protected routes, `/dashboard` stub — **STOP**
+- [x] **M1** Auth: register / login / logout, JWT session, protected routes, `/dashboard` stub — **STOP**
 - [ ] **M2** 29 markdown chapters, seed (+60 persona-driven learners), `/courses`, `/courses/[slug]`, enrol
 - [ ] **M3** Learn page: markdown at 68ch, sidebar, prev/next, mark-complete, progress
 - [ ] **M4** `useReadingTracker`, heartbeat/exit routes, sessions, event taxonomy — **STOP**
