@@ -6,6 +6,8 @@ import { rankCandidates } from "@/lib/reco/rank";
 
 export const RECOMMENDATION_COUNT = 3;
 const STALE_MS = 24 * 60 * 60 * 1000;
+/** ML rows are refreshed by a batch job, so they get a longer grace period. */
+const ML_STALE_MS = 7 * 24 * 60 * 60 * 1000;
 
 export type RecommendationCard = {
   id: string;
@@ -31,8 +33,23 @@ export type RecommendationCard = {
 export async function getRecommendations(
   userId: string,
 ): Promise<RecommendationCard[]> {
+  // Prefer rows written by the ML batch scorer. They are the better ranking when
+  // present; the heuristic exists so the feature still works when they are not.
+  const mlRows = await db.recommendation.findMany({
+    where: { userId, source: "ML_RANKER" },
+    orderBy: { rank: "asc" },
+    take: RECOMMENDATION_COUNT,
+  });
+
+  if (
+    mlRows.length > 0 &&
+    Date.now() - mlRows[0].generatedAt.getTime() <= ML_STALE_MS
+  ) {
+    return hydrate(mlRows);
+  }
+
   const cached = await db.recommendation.findMany({
-    where: { userId },
+    where: { userId, source: "HEURISTIC" },
     orderBy: [{ generatedAt: "desc" }, { rank: "asc" }],
     take: RECOMMENDATION_COUNT,
   });
@@ -73,7 +90,7 @@ export async function generateRecommendations(
   const variant = hashToVariant(userId);
 
   await db.$transaction([
-    db.recommendation.deleteMany({ where: { userId } }),
+    db.recommendation.deleteMany({ where: { userId, source: "HEURISTIC" } }),
     db.recommendation.createMany({
       data: ranked.map((r, i) => ({
         userId,
@@ -96,7 +113,7 @@ export async function generateRecommendations(
   ]);
 
   const rows = await db.recommendation.findMany({
-    where: { userId },
+    where: { userId, source: "HEURISTIC" },
     orderBy: { rank: "asc" },
     take: RECOMMENDATION_COUNT,
   });

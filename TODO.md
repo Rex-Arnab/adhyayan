@@ -16,8 +16,8 @@ Review STOP points: **M1**, **M4**, **M7**.
 
 ## Phase 2 — the ML engine
 
-- [~] **M8** heuristic recommender + cards DONE; Python TF-IDF/SVD still to do
-- [ ] **M9** Learned ranker (LR/GBM) + KMeans personas + dropout risk, `score.py`
+- [x] **M8** heuristic recommender + cards, TF-IDF content, SVD collaborative
+- [x] **M9** Learned ranker (LR/GBM) + KMeans personas + dropout risk, `score.py`
 - [ ] **M10** `/admin/insights`: funnel, CTR by source/variant, feature importances, metrics
 
 ## Branding

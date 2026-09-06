@@ -42,3 +42,8 @@ next-env.d.ts
 
 # prisma generated client
 /src/generated
+
+# ML artifacts (regenerate with: uv run python -m adhyayan_ml.train)
+/ml/artifacts/
+/ml/.venv/
+__pycache__/
