@@ -19,6 +19,7 @@ Build plan: `~/.claude/plans/capacity-connect-lite-generic-noodle.md`. Progress:
   Env var is `AUTH_SECRET` (not `NEXTAUTH_SECRET`). No `@auth/prisma-adapter` — we own the `User` table.
 - **Tailwind v4**: there is no `tailwind.config.ts`. Brand tokens are CSS vars in `src/app/globals.css`
   exposed through `@theme inline`; dark mode is `@custom-variant dark` + `next-themes attribute="class"`.
+- **`react-markdown` v10 has NO `className` prop** (removed in v9) — style a wrapper element.
 - **shadcn `base-nova`** is built on Base UI, not Radix. `Button` has **no `asChild`** — for links,
   apply `buttonVariants({...})` to the `<Link>` directly.
 - **`@react-pdf/renderer`** must stay in `serverExternalPackages` (next.config.ts) or the certificate
