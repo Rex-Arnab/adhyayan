@@ -173,6 +173,12 @@ The admin account unlocks `/admin/insights`. A student hitting that route gets a
 
 > These are published demo credentials. Change them before deploying anywhere reachable.
 
+New passwords must be **8+ characters with a capital letter and a symbol** — the
+register form shows a live strength meter and per-rule checklist, and the API
+enforces the same policy from the same definition (`src/lib/password.ts`), so the
+form cannot accept what the server rejects. The seeded `demo1234` predates the
+policy and still signs in; it just could not be registered today.
+
 ---
 
 ## Screens

@@ -8,6 +8,7 @@ import Link from "next/link";
 const PILLARS = [
   {
     href: "/courses",
+    signedInHref: "/courses",
     eyebrow: "Read",
     body: "Short, text-first chapters you can finish in one sitting. No videos to sit through, no filler.",
     surface: "bg-sky",
@@ -15,7 +16,9 @@ const PILLARS = [
     lift: "sm:mt-10",
   },
   {
+    // Signed-in visitors go to their own numbers, not to a signup form.
     href: "/register",
+    signedInHref: "/dashboard",
     eyebrow: "Measure",
     body: "Reading time counts only while you are genuinely on the page. Switch tabs and the clock stops.",
     surface: "bg-tangerine",
@@ -24,6 +27,7 @@ const PILLARS = [
   },
   {
     href: "/certificates",
+    signedInHref: "/certificates",
     eyebrow: "Finish",
     body: "Complete every chapter to earn a certificate with a public, scannable verification link.",
     surface: "bg-lilac",
@@ -32,13 +36,13 @@ const PILLARS = [
   },
 ] as const;
 
-export function PillarCards() {
+export function PillarCards({ signedIn = false }: { signedIn?: boolean }) {
   return (
     <div className="mx-auto grid max-w-6xl gap-5 px-5 sm:grid-cols-3 sm:gap-4 sm:px-8">
       {PILLARS.map((pillar) => (
         <Link
           key={pillar.eyebrow}
-          href={pillar.href}
+          href={signedIn ? pillar.signedInHref : pillar.href}
           style={{ rotate: pillar.rotate }}
           className={`group block rounded-3xl p-7 text-deep transition-transform duration-200 hover:-translate-y-1 focus-visible:-translate-y-1 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground sm:p-8 ${pillar.surface} ${pillar.lift}`}
         >

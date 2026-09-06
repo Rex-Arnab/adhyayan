@@ -1,11 +1,50 @@
 import Link from "next/link";
 
+import { auth } from "@/auth";
+import { db } from "@/lib/db";
 import { ConfettiField } from "@/components/marketing/confetti";
 import { PillarCards } from "@/components/marketing/pillar-cards";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 
-export default function HomePage() {
+/** Where a signed-in learner should actually go: the next unread chapter. */
+async function resumeTarget(userId: string) {
+  const enrollment = await db.enrollment.findFirst({
+    where: { userId, status: "ACTIVE" },
+    orderBy: { lastSeenAt: "desc" },
+    select: {
+      course: {
+        select: {
+          slug: true,
+          title: true,
+          chapters: { orderBy: { order: "asc" }, select: { id: true, slug: true } },
+        },
+      },
+      chapters: { select: { chapterId: true, status: true } },
+    },
+  });
+  if (!enrollment) return null;
+
+  const done = new Set(
+    enrollment.chapters.filter((c) => c.status === "COMPLETED").map((c) => c.chapterId),
+  );
+  const next = enrollment.course.chapters.find((c) => !done.has(c.id));
+  return next
+    ? { href: `/learn/${enrollment.course.slug}/${next.slug}`, title: enrollment.course.title }
+    : null;
+}
+
+export default async function HomePage() {
+  // A signed-in visitor must never be pushed at "Start learning free" -> /register.
+  const session = await auth();
+  const resume = session?.user?.id ? await resumeTarget(session.user.id) : null;
+
+  const cta = session?.user
+    ? resume
+      ? { href: resume.href, label: "Continue learning" }
+      : { href: "/courses", label: "Browse courses" }
+    : { href: "/register", label: "Start learning free" };
+
   return (
     <div className="flex min-h-dvh flex-col bg-background">
       <SiteHeader />
@@ -27,13 +66,17 @@ export default function HomePage() {
 
             <div className="mt-10">
               <Link
-                href="/register"
+                href={cta.href}
                 className="inline-block rounded-2xl bg-primary px-8 py-4 text-lg font-semibold text-primary-foreground transition-opacity duration-150 hover:opacity-85 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground"
               >
-                Start learning free
+                {cta.label}
               </Link>
               <p className="mt-4 text-sm font-medium text-muted-foreground">
-                No card required. Four courses, twenty-nine chapters.
+                {resume
+                  ? `Picking up ${resume.title}.`
+                  : session?.user
+                    ? "Six courses, forty-five chapters."
+                    : "No card required. Six courses, forty-five chapters."}
               </p>
             </div>
           </div>
@@ -46,7 +89,7 @@ export default function HomePage() {
           />
 
           <div className="relative z-10 mt-20 sm:mt-28">
-            <PillarCards />
+            <PillarCards signedIn={Boolean(session?.user)} />
           </div>
         </section>
 

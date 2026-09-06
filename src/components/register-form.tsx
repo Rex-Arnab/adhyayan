@@ -5,7 +5,9 @@ import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { Loader2 } from "lucide-react";
 
+import { PasswordStrength } from "@/components/password-strength";
 import { Button } from "@/components/ui/button";
+import { PasswordInput } from "@/components/password-input";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { registerSchema } from "@/lib/validation";
@@ -13,18 +15,14 @@ import { registerSchema } from "@/lib/validation";
 const FIELDS = [
   { id: "name", label: "Name", type: "text", autoComplete: "name" },
   { id: "email", label: "Email", type: "email", autoComplete: "email" },
-  {
-    id: "password",
-    label: "Password",
-    type: "password",
-    autoComplete: "new-password",
-    hint: "At least 8 characters.",
-  },
+  { id: "password", label: "Password", type: "password", autoComplete: "new-password" },
 ] as const;
 
 export function RegisterForm() {
   const router = useRouter();
   const [pending, setPending] = useState(false);
+  const [password, setPassword] = useState("");
+  const [touched, setTouched] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
 
@@ -36,6 +34,7 @@ export function RegisterForm() {
     const data = Object.fromEntries(new FormData(event.currentTarget));
     const parsed = registerSchema.safeParse(data);
     if (!parsed.success) {
+      setTouched(true);
       setFieldErrors(parsed.error.flatten().fieldErrors);
       return;
     }
@@ -79,6 +78,19 @@ export function RegisterForm() {
       {FIELDS.map((field) => (
         <div key={field.id} className="space-y-2">
           <Label htmlFor={field.id}>{field.label}</Label>
+          {field.id === "password" ? (
+          <PasswordInput
+            id={field.id}
+            name={field.id}
+            autoComplete={field.autoComplete}
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            onBlur={() => setTouched(true)}
+            aria-invalid={Boolean(fieldErrors[field.id])}
+            aria-describedby="password-requirements"
+          />
+          ) : (
           <Input
             id={field.id}
             name={field.id}
@@ -90,12 +102,16 @@ export function RegisterForm() {
               fieldErrors[field.id] ? `${field.id}-error` : undefined
             }
           />
-          {fieldErrors[field.id] ? (
+          )}
+
+          {field.id === "password" ? (
+            <div id="password-requirements">
+              <PasswordStrength value={password} showFailures={touched} />
+            </div>
+          ) : fieldErrors[field.id] ? (
             <p id={`${field.id}-error`} className="text-sm text-destructive">
               {fieldErrors[field.id][0]}
             </p>
-          ) : "hint" in field ? (
-            <p className="text-sm text-muted-foreground">{field.hint}</p>
           ) : null}
         </div>
       ))}

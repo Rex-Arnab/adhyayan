@@ -10,6 +10,7 @@ import { ProgressRing } from "@/components/learn/progress-ring";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { db } from "@/lib/db";
+import { firstName, possessive } from "@/lib/format";
 import { formatMinutes } from "@/lib/reading";
 import {
   getRecommendations,
@@ -69,7 +70,7 @@ export default async function DashboardPage() {
 
       <main className="mx-auto w-full max-w-6xl flex-1 px-5 py-12 sm:px-8">
         <h1 className="text-4xl font-extrabold tracking-[-0.04em] sm:text-5xl">
-          {session.user.name?.split(" ")[0] ?? "Your"} dashboard
+          {possessive(firstName(session.user.name)) ?? "Your"} dashboard
         </h1>
         <p className="mt-3 text-lg text-muted-foreground">
           Every number here comes from what you actually read.
