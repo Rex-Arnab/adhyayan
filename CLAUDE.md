@@ -1,6 +1,6 @@
-# Capacity Connect Lite
+# Adhyayan
 
-Text-first learning platform. One thesis: instrument the student journey thoroughly enough that a
+Text-first learning platform. **Read deeply. Finish completely.** One thesis: instrument the student journey thoroughly enough that a
 model picks the learner's next lesson better than the learner does.
 
 Build plan: `~/.claude/plans/capacity-connect-lite-generic-noodle.md`. Progress: `TODO.md`.
@@ -32,6 +32,34 @@ Build plan: `~/.claude/plans/capacity-connect-lite-generic-noodle.md`. Progress:
 - Enrolment creates `Enrollment` + all `ChapterProgress` rows in **one transaction**.
 - Course completion flips status **and** issues the certificate in the **same transaction**.
 - `passwordHash` never leaves a query.
+
+## Build hygiene
+
+- **NEVER run `npm run build` while `next dev` is running.** Both write to `.next/`; the build
+  clobbers dev's CSS chunks and every page silently serves **unstyled HTML** with a 404 on
+  `/_next/static/css/app/layout.css`. It looks like broken CSS, not a build error.
+  Always `pkill -f "next dev"` first, and `rm -rf .next` to recover.
+- A JWT session **survives deletion of its `User` row** (JWT strategy, no adapter). Clear cookies
+  when testing after wiping users, or the header will still show a signed-in state.
+
+## Design system — Adhyayan
+
+Palette sampled from the approved reference. **No gradients**; solid fills, tilted cards, geometric
+confetti. Tokens live in `src/app/globals.css`; never hardcode these hex values in components.
+
+| Token | Light | Role |
+| --- | --- | --- |
+| `--ink` / `--foreground` | `#06040e` | headlines, nav, button fill |
+| `--background` | `#f5f5f5` | page ground |
+| `--card` | `#ffffff` | arc + lower sections |
+| `--tangerine` | `#e29a4d` | accent, "Measure" card |
+| `--sky` | `#a5c8d8` | accent, "Read" card |
+| `--lilac` | `#cbb0eb` | accent, "Finish" card |
+| `--deep` | `#10242f` | dark panel, card ink |
+
+- Type: **Plus Jakarta Sans**, headlines ExtraBold at `tracking-[-0.045em]`.
+- Decorative shapes are `aria-hidden`, hidden below `sm`, and must **never** intersect text —
+  verify with a bounding-box intersection check, not by eye.
 
 ## Local commands
 

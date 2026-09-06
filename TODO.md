@@ -1,4 +1,4 @@
-# Capacity Connect Lite — Build TODO
+# Adhyayan — Build TODO
 
 Plan: `~/.claude/plans/capacity-connect-lite-generic-noodle.md`
 Review STOP points: **M1**, **M4**, **M7**.
@@ -20,9 +20,14 @@ Review STOP points: **M1**, **M4**, **M7**.
 - [ ] **M9** Learned ranker (LR/GBM) + KMeans personas + dropout risk, `score.py`
 - [ ] **M10** `/admin/insights`: funnel, CTR by source/variant, feature importances, metrics
 
+## Branding
+
+Name: **Adhyayan** (अध्ययन — Sanskrit, *dedicated study*). Tagline in use: **"Read deeply. Finish completely."**
+Alternates: "Attention, well spent." · "Learn one thing, all the way through." (current hero headline)
+· "Study that learns how you study." · "The discipline of going deeper."
+
 ## Known issues / deferred
 
 - `npm audit`: 2 high advisories (`mysql2`, `deepmerge-ts`) are **dev-only transitive deps of the
   Prisma CLI**. `mysql2` is a driver we never load. Not in the runtime bundle. `npm audit fix --force`
   would downgrade Prisma to 6 — do not run it.
-- Header brand wraps to two lines at 375px — tighten during M7 polish.

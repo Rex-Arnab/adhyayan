@@ -1,53 +1,64 @@
 import Link from "next/link";
-import { GraduationCap } from "lucide-react";
 
 import { auth } from "@/auth";
 import { SignOutButton } from "@/components/sign-out-button";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { buttonVariants } from "@/components/ui/button";
+import { Wordmark } from "@/components/wordmark";
+
+const NAV = [
+  { href: "/courses", label: "Courses" },
+  { href: "/certificates", label: "Verify" },
+];
 
 export async function SiteHeader() {
   const session = await auth();
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b bg-background/85 backdrop-blur supports-[backdrop-filter]:bg-background/70">
-      <div className="mx-auto flex h-16 max-w-6xl items-center gap-2 px-4 sm:gap-4 sm:px-6">
-        <Link
-          href="/"
-          className="flex shrink-0 items-center gap-2 font-semibold whitespace-nowrap"
-        >
-          <GraduationCap className="size-5 text-primary" aria-hidden />
-          <span>Capacity Connect</span>
-        </Link>
+    <header className="relative z-30 w-full">
+      <div className="mx-auto flex h-20 max-w-7xl items-center gap-8 px-5 sm:px-8">
+        <Wordmark />
 
-        <nav className="ml-auto flex items-center gap-1">
-          <Link
-            href="/courses"
-            className={buttonVariants({ variant: "ghost", size: "sm" })}
-          >
-            Courses
-          </Link>
+        <nav className="hidden items-center gap-7 md:flex">
+          {NAV.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="text-[0.95rem] font-medium text-foreground/80 transition-colors duration-150 hover:text-foreground"
+            >
+              {item.label}
+            </Link>
+          ))}
+        </nav>
 
+        <div className="ml-auto flex items-center gap-2 sm:gap-4">
+          <ThemeToggle />
           {session?.user ? (
             <>
               <Link
                 href="/dashboard"
-                className={buttonVariants({ variant: "ghost", size: "sm" })}
+                className="hidden text-[0.95rem] font-medium text-foreground/80 transition-colors duration-150 hover:text-foreground sm:block"
               >
                 Dashboard
               </Link>
-              <ThemeToggle />
               <SignOutButton />
             </>
           ) : (
             <>
-              <ThemeToggle />
-              <Link href="/login" className={buttonVariants({ size: "sm" })}>
-                Sign in
+              <Link
+                href="/login"
+                className="hidden text-[0.95rem] font-medium text-foreground/80 transition-colors duration-150 hover:text-foreground sm:block"
+              >
+                Log in
+              </Link>
+              <Link
+                href="/register"
+                className="rounded-xl bg-primary px-4 py-2.5 text-[0.95rem] font-semibold text-primary-foreground transition-opacity duration-150 hover:opacity-85"
+              >
+                Start free
               </Link>
             </>
           )}
-        </nav>
+        </div>
       </div>
     </header>
   );

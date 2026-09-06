@@ -1,30 +1,31 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Plus_Jakarta_Sans } from "next/font/google";
 
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 
 import "./globals.css";
 
-const inter = Inter({
+const jakarta = Plus_Jakarta_Sans({
   variable: "--font-sans",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
 });
 
 export const metadata: Metadata = {
   title: {
-    default: "Capacity Connect",
-    template: "%s · Capacity Connect",
+    default: "Adhyayan — Read deeply. Finish completely.",
+    template: "%s · Adhyayan",
   },
   description:
-    "A text-first learning platform that measures real attention and recommends what to read next.",
+    "Short written courses that measure real attention, not tab-open time — so we can tell you what to learn next.",
 };
 
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={inter.variable} suppressHydrationWarning>
+    <html lang="en" className={jakarta.variable} suppressHydrationWarning>
       <body className="antialiased">
         <ThemeProvider
           attribute="class"

@@ -1,64 +1,71 @@
 import Link from "next/link";
-import { BookOpen, LineChart, Award } from "lucide-react";
 
+import { ConfettiField } from "@/components/marketing/confetti";
+import { PillarCards } from "@/components/marketing/pillar-cards";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
-import { buttonVariants } from "@/components/ui/button";
-
-const STEPS = [
-  {
-    icon: BookOpen,
-    title: "Enrol and read",
-    body: "Short, text-first chapters you can finish in a sitting. No videos to sit through.",
-  },
-  {
-    icon: LineChart,
-    title: "We measure attention",
-    body: "Reading time counts only while you are actually on the page and active — switch tabs and it stops.",
-  },
-  {
-    icon: Award,
-    title: "Finish and verify",
-    body: "Complete every chapter to earn a certificate with a public verification link.",
-  },
-];
 
 export default function HomePage() {
   return (
-    <div className="flex min-h-dvh flex-col">
+    <div className="flex min-h-dvh flex-col bg-background">
       <SiteHeader />
 
-      <main className="flex-1">
-        <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-28">
-          <h1 className="max-w-3xl text-balance text-4xl font-semibold tracking-tight sm:text-5xl">
-            Learn something small, completely.
-          </h1>
-          <p className="mt-5 max-w-xl text-lg text-muted-foreground">
-            Short written courses that track how you actually read — so we can tell
-            you what to learn next.
-          </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link href="/courses" className={buttonVariants({ size: "lg" })}>
-              Browse courses
-            </Link>
-            <Link
-              href="/register"
-              className={buttonVariants({ size: "lg", variant: "outline" })}
-            >
-              Create an account
-            </Link>
+      {/* Hero + cards share one stacking context so the arc can sit behind both. */}
+      <main className="relative flex-1">
+        <section className="relative overflow-hidden pb-40 pt-12 sm:pb-56 sm:pt-16">
+          <ConfettiField />
+
+          <div className="relative mx-auto max-w-4xl px-5 text-center sm:px-8">
+            <h1 className="text-balance text-[2.6rem] font-extrabold leading-[1.03] tracking-[-0.045em] sm:text-6xl lg:text-7xl">
+              Learn one thing, all the way through.
+            </h1>
+
+            <p className="mx-auto mt-6 max-w-xl text-pretty text-lg font-medium leading-relaxed text-muted-foreground sm:text-xl">
+              Short written courses that measure real attention — not tab-open
+              time — so we can tell you exactly what to read next.
+            </p>
+
+            <div className="mt-10">
+              <Link
+                href="/register"
+                className="inline-block rounded-2xl bg-primary px-8 py-4 text-lg font-semibold text-primary-foreground transition-opacity duration-150 hover:opacity-85 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground"
+              >
+                Start learning free
+              </Link>
+              <p className="mt-4 text-sm font-medium text-muted-foreground">
+                No card required. Four courses, twenty-nine chapters.
+              </p>
+            </div>
+          </div>
+
+          {/* The arc: a wide ellipse cresting from below in card colour, so the
+              cards straddle the boundary the way the reference does. */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-x-[-22%] bottom-[-14rem] h-[30rem] rounded-[50%] bg-card"
+          />
+
+          <div className="relative z-10 mt-20 sm:mt-28">
+            <PillarCards />
           </div>
         </section>
 
-        <section className="border-t bg-card/50">
-          <div className="mx-auto grid max-w-6xl gap-6 px-4 py-16 sm:grid-cols-3 sm:px-6">
-            {STEPS.map(({ icon: Icon, title, body }) => (
-              <div key={title} className="rounded-xl border bg-card p-6 shadow-sm">
-                <Icon className="size-5 text-primary" aria-hidden />
-                <h2 className="mt-4 font-medium">{title}</h2>
-                <p className="mt-2 text-sm text-muted-foreground">{body}</p>
-              </div>
-            ))}
+        <section className="bg-card pb-24 pt-8">
+          <div className="mx-auto max-w-6xl px-5 sm:px-8">
+            <div className="rounded-3xl bg-deep px-7 py-12 text-cream sm:px-14 sm:py-16">
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-sky">
+                Why it is different
+              </p>
+              <h2 className="mt-4 max-w-2xl text-balance text-3xl font-extrabold tracking-[-0.035em] text-white sm:text-4xl">
+                Most platforms count minutes. We count attention.
+              </h2>
+              <p className="mt-5 max-w-2xl text-pretty text-lg font-medium leading-relaxed text-white/70">
+                Open a tab and walk away and most tools will happily record ninety
+                minutes of &ldquo;learning&rdquo;. Adhyayan only counts a second when the page
+                is visible, focused, and you have moved in the last minute — which
+                is what makes the recommendations worth trusting.
+              </p>
+            </div>
           </div>
         </section>
       </main>
