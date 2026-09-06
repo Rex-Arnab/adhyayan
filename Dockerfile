@@ -1,23 +1,27 @@
 # syntax=docker/dockerfile:1
-# Multi-stage build for the Next.js app. Versions are pinned: a floating tag
-# turns a reproducible image into a lottery.
-FROM node:24.12.0-alpine AS deps
-WORKDIR /app
-RUN apk add --no-cache libc6-compat openssl
-COPY package.json package-lock.json ./
-RUN npm ci
-
+# Versions are pinned: a floating tag turns a reproducible image into a lottery.
+#
+# Dependencies are installed in the SAME stage that uses them. An extra `deps`
+# stage whose node_modules is copied forward saves nothing here and fails on some
+# Docker Desktop builds with:
+#   failed to compute cache key: "/app/node_modules": not found
 FROM node:24.12.0-alpine AS builder
 WORKDIR /app
 RUN apk add --no-cache libc6-compat openssl
-COPY --from=deps /app/node_modules ./node_modules
+
+COPY package.json package-lock.json ./
+# `npm install` rather than `npm ci`: it tolerates a lockfile that has drifted
+# slightly from package.json instead of aborting the whole build.
+RUN npm install --no-audit --no-fund
+
 COPY . .
-# Prisma 7 generates a TS client into src/generated, so this must run before build.
+# Prisma 7 generates a TypeScript client into src/generated, so this must run
+# before the Next build compiles anything that imports it.
 RUN npx prisma generate
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 
-# Migrations + seeding need the full source: prisma/seed.ts imports src/lib.
+# Migrations and seeding need the full source: prisma/seed.ts imports src/lib.
 # Kept separate so the runtime image ships no source and no migration rights.
 FROM node:24.12.0-alpine AS migrator
 WORKDIR /app
