@@ -1,0 +1,207 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------- Identity ----------
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  role         Role     @default(STUDENT)
+  createdAt    DateTime @default(now())
+
+  enrollments     Enrollment[]
+  sessions        LearningSession[]
+  events          EventLog[]
+  recommendations Recommendation[]
+  mlProfile       MlProfile?
+}
+
+enum Role {
+  STUDENT
+  ADMIN
+}
+
+// ---------- Content ----------
+model Course {
+  id               String   @id @default(cuid())
+  slug             String   @unique
+  title            String
+  summary          String
+  description      String   @db.Text
+  coverEmoji       String   @default("📘")
+  level            Level    @default(BEGINNER)
+  tags             String[]
+  estimatedMinutes Int      @default(0)
+  published        Boolean  @default(true)
+  createdAt        DateTime @default(now())
+
+  chapters    Chapter[]
+  enrollments Enrollment[]
+
+  @@index([published])
+}
+
+enum Level {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+model Chapter {
+  id               String  @id @default(cuid())
+  courseId         String
+  order            Int
+  slug             String
+  title            String
+  contentMd        String  @db.Text
+  youtubeId        String?
+  wordCount        Int     @default(0)
+  estimatedMinutes Int     @default(0)
+
+  course   Course            @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  progress ChapterProgress[]
+
+  @@unique([courseId, order])
+  @@unique([courseId, slug])
+}
+
+// ---------- Learning state ----------
+model Enrollment {
+  id          String           @id @default(cuid())
+  userId      String
+  courseId    String
+  status      EnrollmentStatus @default(ACTIVE)
+  progressPct Int              @default(0)
+  enrolledAt  DateTime         @default(now())
+  lastSeenAt  DateTime         @default(now())
+  completedAt DateTime?
+
+  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course      Course            @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  chapters    ChapterProgress[]
+  certificate Certificate?
+
+  @@unique([userId, courseId])
+  @@index([userId, status])
+}
+
+enum EnrollmentStatus {
+  ACTIVE
+  COMPLETED
+  DROPPED
+}
+
+model ChapterProgress {
+  id            String         @id @default(cuid())
+  enrollmentId  String
+  chapterId     String
+  status        ProgressStatus @default(NOT_STARTED)
+  visits        Int            @default(0)
+  activeSeconds Int            @default(0)
+  maxScrollPct  Int            @default(0)
+  firstOpenedAt DateTime?
+  lastOpenedAt  DateTime?
+  completedAt   DateTime?
+
+  enrollment Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  chapter    Chapter    @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+
+  @@unique([enrollmentId, chapterId])
+}
+
+enum ProgressStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+}
+
+// ---------- Instrumentation ----------
+model LearningSession {
+  id                String    @id @default(cuid())
+  userId            String
+  startedAt         DateTime  @default(now())
+  lastBeatAt        DateTime  @default(now())
+  endedAt           DateTime?
+  activeSeconds     Int       @default(0)
+  chaptersVisited   Int       @default(0)
+  chaptersCompleted Int       @default(0)
+  endReason         String?
+
+  user   User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  events EventLog[]
+
+  @@index([userId, startedAt])
+}
+
+model EventLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  sessionId  String?
+  type       String
+  courseId   String?
+  chapterId  String?
+  metadata   Json     @default("{}")
+  occurredAt DateTime
+  createdAt  DateTime @default(now())
+
+  user    User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  session LearningSession? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([type, createdAt])
+}
+
+// ---------- Output ----------
+model Certificate {
+  id           String   @id @default(cuid())
+  enrollmentId String   @unique
+  serial       String   @unique
+  learnerName  String
+  courseTitle  String
+  issuedAt     DateTime @default(now())
+  downloads    Int      @default(0)
+
+  enrollment Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+}
+
+// ---------- Recommendations (Phase 2) ----------
+model Recommendation {
+  id           String    @id @default(cuid())
+  userId       String
+  courseId     String
+  chapterId    String?
+  score        Float
+  reason       String
+  source       String // "ML_RANKER" | "CONTENT" | "COLLAB" | "HEURISTIC"
+  rank         Int
+  generatedAt  DateTime  @default(now())
+  shownAt      DateTime?
+  clickedAt    DateTime?
+  modelVersion String?
+  features     Json?
+  variant      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, generatedAt])
+  @@index([chapterId])
+}
+
+model MlProfile {
+  userId       String   @id
+  persona      String?
+  personaId    Int?
+  dropoutRisk  Float?
+  readingWpm   Float?
+  computedAt   DateTime @default(now())
+  modelVersion String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
