@@ -114,11 +114,37 @@ The whole stack — database, migrations, seed, and app — in one command:
 ```bash
 git clone https://github.com/Rex-Arnab/adhyayan.git
 cd adhyayan
+```
+
+Create a `.env` with a signing secret. Pick the line for your shell:
+
+```bash
+# macOS / Linux / Git Bash / WSL
 echo "AUTH_SECRET=$(openssl rand -base64 32)" > .env
+```
+
+```powershell
+# Windows PowerShell
+"AUTH_SECRET=$([Convert]::ToBase64String((1..32|%{Get-Random -Max 256})))" | Out-File -Encoding ascii .env
+```
+
+```cmd
+:: Windows cmd.exe — needs Node installed
+node -e "console.log('AUTH_SECRET='+require('crypto').randomBytes(32).toString('base64'))" > .env
+```
+
+Then:
+
+```bash
 docker compose up --build
 ```
 
-Open **http://localhost:3000**.
+Open **http://localhost:3000**. Nothing else is required — no Node, no Postgres,
+no Python on the host.
+
+> If the build stops with `AUTH_SECRET ... is required`, the `.env` above was not
+> created in the repo root. Compose refuses to start without it rather than
+> falling back to a weak default.
 
 On first start it migrates and restores the snapshot automatically. On every later
 start it detects the existing data and **skips seeding**, so a restart never

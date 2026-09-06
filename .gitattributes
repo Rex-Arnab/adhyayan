@@ -1,0 +1,10 @@
+# Normalise line endings so a Windows checkout does not produce CRLF files that
+# break inside Linux containers.
+* text=auto eol=lf
+
+# Binary — never touched.
+*.webp   binary
+*.png    binary
+*.jpg    binary
+*.gz     binary
+*.joblib binary
