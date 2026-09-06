@@ -6,10 +6,13 @@ import { ChapterFooter } from "@/components/learn/chapter-footer";
 import { ChapterNav } from "@/components/learn/chapter-nav";
 import { MobileChapterSheet } from "@/components/learn/mobile-chapter-sheet";
 import { ReadingPane } from "@/components/learn/reading-pane";
+import {
+  LiveReadingTime,
+  ReadingTrackerProvider,
+} from "@/components/learn/reading-tracker";
 import { ScrollProgress } from "@/components/learn/scroll-progress";
 import { SiteHeader } from "@/components/site-header";
 import { db } from "@/lib/db";
-import { logEvent } from "@/lib/events";
 import { getLearnContext } from "@/lib/progress";
 
 type Params = { params: Promise<{ slug: string; chapterSlug: string }> };
@@ -39,13 +42,6 @@ export default async function LearnPage({ params }: Params) {
   if (!ctx.enrollment) {
     redirect(`/courses/${slug}`);
   }
-
-  await logEvent({
-    userId: session.user.id,
-    type: "CHAPTER_OPEN",
-    courseId: ctx.course.id,
-    chapterId: ctx.chapter.id,
-  });
 
   const alreadyComplete =
     ctx.chapters.find((c) => c.id === ctx.chapter.id)?.status === "COMPLETED";
@@ -83,6 +79,11 @@ export default async function LearnPage({ params }: Params) {
             />
           </div>
 
+          <ReadingTrackerProvider
+            chapterId={ctx.chapter.id}
+            initialActiveSeconds={ctx.currentProgress?.activeSeconds ?? 0}
+            initialScrollPct={ctx.currentProgress?.maxScrollPct ?? 0}
+          >
           <main className="flex-1 px-4 py-10 sm:px-6 sm:py-14">
             <p className="reading-column mx-auto text-sm font-bold uppercase tracking-[0.16em] text-muted-foreground">
               Chapter {ctx.chapter.order} of {ctx.chapters.length}
@@ -102,11 +103,10 @@ export default async function LearnPage({ params }: Params) {
             nextSlug={ctx.next?.slug ?? null}
             alreadyComplete={alreadyComplete}
             readingIndicator={
-              <span>
-                About {ctx.chapter.estimatedMinutes} min · {ctx.chapter.wordCount} words
-              </span>
+              <LiveReadingTime estimatedMinutes={ctx.chapter.estimatedMinutes} />
             }
           />
+          </ReadingTrackerProvider>
         </div>
       </div>
     </div>

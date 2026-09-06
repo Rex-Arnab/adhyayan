@@ -9,6 +9,10 @@ import { logEvent } from "@/lib/events";
 
 export const metadata: Metadata = { title: "Courses" };
 
+/** Spelled out so the subhead reads as prose and cannot drift from the catalogue. */
+const NUMBER_WORDS = ["No", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"];
+const countWord = (n: number) => NUMBER_WORDS[n] ?? String(n);
+
 export default async function CoursesPage() {
   const session = await auth();
 
@@ -63,8 +67,8 @@ export default async function CoursesPage() {
           Courses
         </h1>
         <p className="mt-3 max-w-xl text-lg text-muted-foreground">
-          Four short courses. Every chapter is written to be finished in one
-          sitting.
+          {countWord(cards.length)} short courses. Every chapter is written to
+          be finished in one sitting.
         </p>
 
         <CourseCatalog courses={cards} />

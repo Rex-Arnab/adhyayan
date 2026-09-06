@@ -79,4 +79,34 @@ The last chapters move to GitHub: remotes, pull requests, and how to give and re
     tags: ["git", "tools", "programming"],
     dir: "git-github-basics",
   },
+  {
+    slug: "python-basics",
+    title: "Python for Beginners",
+    summary:
+      "From variables to files — the language core, with the traps that bite everyone.",
+    description: `Python asks you to write down very little that is not the idea itself, which is why it is a good first language and a dangerous second one.
+
+This course covers the core: values and types, strings, control flow, functions, lists and dicts, comprehensions, and the modules, files and exceptions that turn a script into a program.
+
+Every chapter names the specific traps — mutable default arguments, \`sort()\` returning \`None\`, the bare \`except\` that hides real bugs — because those are what actually cost people afternoons.`,
+    coverEmoji: "🐍",
+    level: "BEGINNER",
+    tags: ["python", "programming", "backend", "data"],
+    dir: "python-basics",
+  },
+  {
+    slug: "java-basics",
+    title: "Java Essentials",
+    summary:
+      "Static types, objects and collections — what every Java framework assumes you know.",
+    description: `Java asks for more ceremony than a scripting language, and the ceremony is the point: everything has a declared type and the compiler checks the whole program before a line runs.
+
+We start at \`public static void main\` and work through the type system, control flow, methods, classes, inheritance and interfaces, the Collections Framework, and exceptions.
+
+This is the layer Spring, Android and the streams API all sit on top of. It is marked intermediate not because it is hard, but because static typing and object modelling are a genuine step up from a first scripting language.`,
+    coverEmoji: "☕",
+    level: "INTERMEDIATE",
+    tags: ["java", "programming", "backend", "oop"],
+    dir: "java-basics",
+  },
 ];
