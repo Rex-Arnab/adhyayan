@@ -22,7 +22,7 @@ npx auth secret               # generates AUTH_SECRET
 
 createdb adhyayan
 npx prisma migrate dev        # create the schema
-npx prisma db seed            # 6 courses, 45 chapters, 62 learners  (explicit — Prisma 7 does not auto-seed)
+npm run db:seed               # restores the committed snapshot (Prisma 7 does not auto-seed)
 
 npm run dev                   # http://localhost:3000
 ```
@@ -37,6 +37,40 @@ npm run dev                   # http://localhost:3000
 The admin account unlocks `/admin/insights`. A student hitting that route gets a
 404, not a 403 — the page should not announce itself.
 
+### Seed data
+
+Seeding restores a **committed snapshot of a known-good database** —
+`prisma/fixtures/snapshot.json.gz` (240 KB) — so a fresh install is a complete,
+populated platform rather than an empty shell:
+
+| | |
+| --- | --- |
+| 62 learners across 8 behavioural personas | 6 courses, 45 chapters |
+| 122 enrolments, 655 chapter-progress rows | 7,174 events |
+| 68 certificates | **191 recommendations + 61 ML profiles** |
+
+Because the ML output is included, the dashboard shows model-ranked
+recommendations and `/admin/insights` shows real metrics **without running the
+Python pipeline at all**.
+
+Two details that matter:
+
+- **Chapter markdown is not in the fixture.** `prisma/content/*.md` stays the
+  single source of truth and is re-read on restore, so the two cannot drift.
+- **Timestamps are re-based on restore.** Every date is shifted forward by the
+  fixture's age, so a months-old snapshot still yields live streaks and a
+  populated events-per-day chart instead of looking abandoned.
+
+| Command | Effect |
+| --- | --- |
+| `npm run db:seed` | Restore the snapshot — **skips if the database already has data** |
+| `npm run db:reseed` | `FORCE_SEED=1` — wipe and restore |
+| `npm run db:seed:generate` | Ignore the fixture and generate fresh synthetic data |
+| `npm run db:snapshot` | Export the current database to a new fixture |
+
+To capture your own state as the new baseline: `npm run db:snapshot`, then commit
+`prisma/fixtures/snapshot.json.gz`.
+
 ---
 
 ## Docker
@@ -46,6 +80,11 @@ echo "AUTH_SECRET=$(npx auth secret --raw 2>/dev/null || openssl rand -base64 32
 docker compose up --build          # db + migrate + seed + web  ->  localhost:3000
 docker compose run --rm ml         # train the models and write recommendations
 ```
+
+On first start the stack migrates and restores the snapshot automatically. On
+every later start it detects the existing data and **skips seeding**, so a
+restart never destroys accounts you created. `FORCE_SEED=1` re-seeds
+deliberately.
 
 Postgres is published on host port **5433** so it cannot collide with a local
 Postgres on 5432. Every image tag is pinned.

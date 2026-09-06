@@ -6,7 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:seed": "prisma db seed",
+    "db:reseed": "FORCE_SEED=1 prisma db seed",
+    "db:snapshot": "tsx prisma/snapshot.ts",
+    "db:seed:generate": "FORCE_SEED=1 SEED_MODE=generate prisma db seed"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",

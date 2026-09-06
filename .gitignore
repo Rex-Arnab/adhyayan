@@ -44,6 +44,9 @@ next-env.d.ts
 /src/generated
 
 # ML artifacts (regenerate with: uv run python -m adhyayan_ml.train)
-/ml/artifacts/
+# metrics.json is committed so /admin/insights is populated out of the box;
+# the binary models are not.
+/ml/artifacts/*
+!/ml/artifacts/metrics.json
 /ml/.venv/
 __pycache__/

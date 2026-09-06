@@ -6,6 +6,7 @@ import { makeSerial } from "../src/lib/certificate-serial";
 import { COURSES } from "./seed/catalog";
 import { loadChapters } from "./seed/content";
 import { seedSyntheticLearners } from "./seed/history";
+import { restoreSnapshot, snapshotExists } from "./seed/restore";
 
 const DAY_MS = 86_400_000;
 
@@ -181,6 +182,18 @@ async function main() {
 
   console.log("Resetting…");
   await reset();
+
+  // Prefer an exact snapshot of a known-good database when one is committed.
+  // It carries the ML-generated recommendations and learner profiles, so a fresh
+  // stack is a COMPLETE platform without having to run the Python pipeline.
+  // Falls back to procedural generation when no fixture is present.
+  if (snapshotExists() && process.env.SEED_MODE !== "generate") {
+    const counts = await restoreSnapshot(db);
+    console.log("\nRestored from snapshot:");
+    console.table(counts);
+    console.log("\n  student@demo.com / admin@demo.com — password: demo1234");
+    return;
+  }
 
   console.log("Seeding courses…");
   const courses = await seedCourses();

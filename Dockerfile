@@ -43,6 +43,9 @@ COPY --from=builder /app/src/generated ./src/generated
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
+# Seeds the shared ml-artifacts volume on first start, so /admin/insights shows
+# real model metrics before the ml batch job has ever run.
+COPY --from=builder /app/ml/artifacts ./ml/artifacts
 
 USER nextjs
 EXPOSE 3000

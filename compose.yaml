@@ -42,7 +42,7 @@ services:
     volumes:
       # /admin/insights reads metrics.json, which the `ml` job writes. Without a
       # shared volume the page would always report that the pipeline never ran.
-      - ml-artifacts:/app/ml/artifacts:ro
+      - ml-artifacts:/app/ml/artifacts
     depends_on:
       migrate:
         condition: service_completed_successfully
